@@ -163,7 +163,7 @@ In [73]: l1=data[0].split()			#este comando divide la primera entrada, si no se 
 In [74]: l1				
 Out[74]: ['1', '1.3', '6', '8', 'star']
 
-In [78]: for row in data:
+In [78]: for row in data:		
     ...:     datos=row.split()
     ...:     print('N={} x={} y={} z={} tipo={}' .format(datos[0],datos[1],datos[2],datos[3],datos[4]))
     ...:    
@@ -171,7 +171,195 @@ N=1 x=1.3 y=6 z=8 tipo=star
 N=2 x=6.1 y=3 z=4 tipo=galaxy
 N=3 x=-5.4 y=1 z=6 tipo=cluster
 
+N=[]
+x=[]
+tipo=[]
 
 
+In [83]: for row in data:			#con este for estamos dividiendo los datos en 3 tipos y los estamos metiendo en listas (N,x y tipo)
+    ...:     datos=row.split()
+    ...:     N.append(int(datos[0]))
+    ...:     x.append(float(datos[1]))
+    ...:     tipo.append(str(datos[4]))
+    ...:     
 
+In [84]: print N
+[1, 2, 3]
+
+In [85]: print x
+[1.3, 6.1, -5.4]
+
+In [86]: print tipo
+['star', 'galaxy', 'cluster']
+
+#otra manera de hacer lo mismo pero con menos líneas de código:
+
+In [87]: N=np.array([int(row.split()[0]) for row in data])
+
+In [88]: x=np.array([float(row.split()[1]) for row in data])
+
+In [89]: tipo=np.array([str(row.split()[4]) for row in data])	#sin embargo, como tipo está hecho de cadenas, no es necesario convertirlo en array:
+
+tipo=[row.split()[4] for row in data]
+
+In [90]: print (N,x,tipo)
+(array([1, 2, 3]), array([ 1.3,  6.1, -5.4]), array(['star', 'galaxy', 'cluster'], 
+      dtype='|S7'))
+
+#ahora vamos a ver qué pasa con listas que tienen filas u objetos que no nos interesa usar:
+
+In [94]: %%writefle data2.dat
+    ...: #estos datos son de prueba
+    ...: N f x y tipo
+    ...: 1 3.2 5 7 star
+    ...: 2 7.1 8 6 galaxy
+    ...: 3 -2.1 7 8 cluster
+    ...: #4 2.7 6 4 binary
+    ...: 
+
+In [100]: datafile=open('data2.dat','r')
+
+In [101]: row=datafile.readline()
+
+In [102]: primer_com=row
+
+In [103]: row=datafile.readline()
+
+In [104]: nombres_var=row
+
+In [105]: nombres_var
+Out[105]: 'N f x y tipo\n'
+
+In [106]: primer_com
+Out[106]: '#estos datos son de prueba\n'
+
+In [107]: datos_buenos=[]		#lista vacía para ir llenando
+
+In [108]: while True:			
+     ...:     row=datafile.readline()
+     ...:     if row=='':		#con línea vacía queremos que:
+     ...:         break			#'break' rompa el ciclo while
+     ...:     
+     ...:     if row[0]!='#' and row[0]!='\n':		#si el primer elemento de la línea no es un '#':
+     ...:         datos_buenos.append(row.split())	#que se guarde en datos_buenos (con split)
+     ...:        
+
+In [109]: print datos_buenos
+[['1', '1.3', '6', '8', 'star'], ['2', '6.1', '3', '4', 'galaxy'], ['3', '-5.4', '1', '6', 'cluster']]
+
+In [110]: datafile.close()
+
+
+#una forma más corta:
+
+In [100]: datafile=open('data2.dat','r')
+
+In [101]: row=datafile.readline()
+
+In [102]: primer_com=row
+
+In [103]: row=datafile.readline()
+
+In [104]: nombres_var=row
+
+In [112]: datos2=[]
+
+In [122]: while row !='':
+     ...:     if row[0]!= '#':
+     ...:         datos2.append(row.split())
+     ...:     row=datafile.readline()
+     ...:     
+
+In [123]: datos2
+Out[123]: 
+ [['1', '1.3', '6', '8', 'star'],
+ ['2', '6.1', '3', '4', 'galaxy'],
+ ['3', '-5.4', '1', '6', 'cluster']]
+
+#una última manera de hacerlo
+
+In [127]: datafile=open('data2.dat','r')
+
+In [128]: datos3=[]
+
+In [129]: row=datafile.readline()
+
+In [130]: primer_com=row
+
+In [131]: row=datafile.readline()
+
+In [132]: nombres_var=row
+
+In [133]: primer_com
+Out[133]: '#estos datos son de prueba\n'
+
+In [134]: nombres_var
+Out[134]: 'N f x y tipo\n'
+
+In [135]: for row in datafile:
+     ...:     if row[0]!='#':
+     ...:         datos3.append(row.split())
+     ...:     
+
+In [136]: datafile.close()
+
+In [137]: datos3
+Out[137]: 
+[['1', '1.3', '6', '8', 'star'],
+ ['2', '6.1', '3', '4', 'galaxy'],
+ ['3', '-5.4', '1', '6', 'cluster']]
+
+#LA MEJOR MANERA DE HACERLO Y NO MAMADAS:
+
+#loadtxt de numpy
+
+In [141]: b=np.loadtxt('data2.dat',skiprows=2,dtype='i4, f, f, f, U10')
+
+In [142]: b
+Out[142]: 
+array([(1, 1.2999999523162842, 6.0, 8.0, u'star'),
+       (2, 6.099999904632568, 3.0, 4.0, u'galaxy'),
+       (3, -5.400000095367432, 1.0, 6.0, u'cluster')], 
+      dtype=[('f0', '<i4'), ('f1', '<f4'), ('f2', '<f4'), ('f3', '<f4'), ('f4', '<U10')])
+
+In [143]: b[0]
+Out[143]: (1, 1.2999999523162842, 6.0, 8.0, u'star')
+
+#genfromtxt de numpy
+
+In [144]: c=np.genfromtxt('data2.dat',names=True,dtype=None,skip_header=1)	#mucho más facil, skip_header es como skiprows
+
+In [145]: c
+Out[145]: 
+array([(1, 1.3, 6, 8, 'star'), (2, 6.1, 3, 4, 'galaxy'),
+       (3, -5.4, 1, 6, 'cluster')], 
+      dtype=[('N', '<i8'), ('f', '<f8'), ('x', '<i8'), ('y', '<i8'), ('tipo', 'S7')])
+
+In [146]: print c
+[(1, 1.3, 6, 8, 'star') (2, 6.1, 3, 4, 'galaxy') (3, -5.4, 1, 6, 'cluster')]
+
+In [147]: c['f']
+Out[147]: array([ 1.3,  6.1, -5.4])
+
+In [148]: c['N']
+Out[148]: array([1, 2, 3])
+
+#una última forma, usando iwal genfromtxt
+
+In [149]: N,f,x,y,tipo=np.genfromtxt('data2.dat',skip_header=2,unpack=True)
+
+In [150]: N
+Out[150]: array([ 1.,  2.,  3.])
+
+In [151]: f
+Out[151]: array([ 1.3,  6.1, -5.4])
+
+In [152]: x
+Out[152]: array([ 6.,  3.,  1.])
+
+In [153]: y
+Out[153]: array([ 8.,  4.,  6.])
+
+In [154]: tipo
+Out[154]: array([ nan,  nan,  nan])
 

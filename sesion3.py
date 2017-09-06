@@ -82,7 +82,7 @@ a.mean()	#regresa la media
 a.sum()		#suma los valores
 b[mask].sum()	#se valen las composiciones
 b.argmin()	#da el indice del valor minimo
-b.argmax	#da el índice del valor máximo
+b.argmax()	#da el índice del valor máximo
 
 #Arreglos estructurados
 
